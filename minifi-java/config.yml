@@ -1,0 +1,134 @@
+MiNiFi Config Version: 3
+Flow Controller:
+  name: minifi
+  comment: ''
+Core Properties:
+  flow controller graceful shutdown period: 10 sec
+  flow service write delay interval: 500 ms
+  administrative yield duration: 30 sec
+  bored yield duration: 10 millis
+  max concurrent threads: 1
+  variable registry properties: ''
+FlowFile Repository:
+  partitions: 256
+  checkpoint interval: 2 mins
+  always sync: false
+  Swap:
+    threshold: 20000
+    in period: 5 sec
+    in threads: 1
+    out period: 5 sec
+    out threads: 4
+Content Repository:
+  content claim max appendable size: 10 MB
+  content claim max flow files: 100
+  always sync: false
+Provenance Repository:
+  provenance rollover time: 1 min
+Component Status Repository:
+  buffer size: 1440
+  snapshot frequency: 1 min
+Security Properties:
+  keystore: ''
+  keystore type: ''
+  keystore password: ''
+  key password: ''
+  truststore: ''
+  truststore type: ''
+  truststore password: ''
+  ssl protocol: ''
+  Sensitive Props:
+    key:
+    algorithm: PBEWITHMD5AND256BITAES-CBC-OPENSSL
+    provider: BC
+Processors: []
+Controller Services: []
+Process Groups:
+- id: 8c209bce-251f-3bb8-0000-000000000000
+  name: MiNiFi Flows
+  Processors:
+  - id: 5f2be7a7-4886-3fce-0000-000000000000
+    name: PutS3Object
+    class: org.apache.nifi.processors.aws.s3.PutS3Object
+    max concurrent tasks: 1
+    scheduling strategy: TIMER_DRIVEN
+    scheduling period: 0 sec
+    penalization period: 30 sec
+    yield period: 1 sec
+    run duration nanos: 0
+    auto-terminated relationships list:
+    - failure
+    - success
+    Properties:
+      AWS Credentials Provider service:
+      Access Key:
+      Bucket: dataworks-summit-botnet-iot
+      Communications Timeout: 30 secs
+      Content Type:
+      Credentials File: /opt/minifi/s3.credentials
+      Endpoint Override URL:
+      Expiration Time Rule:
+      FullControl User List: ${s3.permissions.full.users}
+      Multipart Part Size: 5 GB
+      Multipart Threshold: 5 GB
+      Multipart Upload AgeOff Interval: 60 min
+      Multipart Upload Max Age Threshold: 7 days
+      Object Key: ${filename}
+      Owner: ${s3.owner}
+      Proxy Host:
+      Proxy Host Port:
+      Read ACL User List: ${s3.permissions.readacl.users}
+      Read Permission User List: ${s3.permissions.read.users}
+      Region: us-east-1
+      SSL Context Service:
+      Secret Key:
+      Signer Override: Default Signature
+      Storage Class: ReducedRedundancy
+      Write ACL User List: ${s3.permissions.writeacl.users}
+      Write Permission User List: ${s3.permissions.write.users}
+      canned-acl: ${s3.permissions.cannedacl}
+      server-side-encryption: None
+  - id: de47572d-8afd-35cf-0000-000000000000
+    name: TailFile
+    class: org.apache.nifi.processors.standard.TailFile
+    max concurrent tasks: 1
+    scheduling strategy: TIMER_DRIVEN
+    scheduling period: 60 sec
+    penalization period: 30 sec
+    yield period: 1 sec
+    run duration nanos: 0
+    auto-terminated relationships list: []
+    Properties:
+      File Location: Local
+      File to Tail: /logs/cowrie.json
+      Initial Start Position: Beginning of File
+      Rolling Filename Pattern:
+      tail-base-directory:
+      tail-mode: Single file
+      tailfile-lookup-frequency: 10 minutes
+      tailfile-maximum-age: 24 hours
+      tailfile-recursive-lookup: 'false'
+      tailfile-rolling-strategy: Fixed name
+  Controller Services: []
+  Process Groups: []
+  Input Ports: []
+  Output Ports: []
+  Funnels: []
+  Connections:
+  - id: bed836cc-3ecf-3344-0000-000000000000
+    name: TailFile/success/PutS3Object
+    source id: de47572d-8afd-35cf-0000-000000000000
+    source relationship names:
+    - success
+    destination id: 5f2be7a7-4886-3fce-0000-000000000000
+    max work queue size: 10000
+    max work queue data size: 1 GB
+    flowfile expiration: 0 sec
+    queue prioritizer class: ''
+  Remote Process Groups: []
+Input Ports: []
+Output Ports: []
+Funnels: []
+Connections: []
+Remote Process Groups: []
+NiFi Properties Overrides: {}
